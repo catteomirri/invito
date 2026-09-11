@@ -87,6 +87,9 @@
     font-size: 0.85rem;
     color: var(--muted);
     min-height: 1.2em;
+  }  .stato.successo{
+    font-size: 1.8rem;
+    color: #7ec8e3;
   }
 </style>
 </head>
@@ -143,17 +146,23 @@
     }
 
     try{
+      const datiInvio = {
+        ...risposte,
+        dispositivo: `${navigator.userAgent} — schermo ${window.screen.width}x${window.screen.height}`
+      };
+
       const risposta = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(risposte)
+        body: JSON.stringify(datiInvio)
       });
 
       if(risposta.ok){
         stato.textContent = '💙';
+        stato.classList.add('successo');
       }else{
         stato.textContent = 'Qualcosa non ha funzionato, ma le risposte restano salvate qui.';
       }
