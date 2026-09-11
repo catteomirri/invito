@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quando?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #241129;
+    --bg-2: #33163a;
+    --cream: #f7ecdf;
+    --coral: #ef7a5f;
+    --coral-dim: #c95f49;
+    --muted: #b79fc0;
+    --card: rgba(247, 236, 224, 0.06);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{ margin: 0; min-height: 100%; }
+
+  body{
+    background: radial-gradient(ellipse at 30% 20%, var(--bg-2), var(--bg) 65%);
+    color: var(--cream);
+    font-family: 'Space Grotesk', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .scene{
+    width: min(560px, 92vw);
+    text-align: center;
+  }
+
+  .kicker{
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 0.9rem;
+  }
+
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.9rem, 5.5vw, 2.8rem);
+    line-height: 1.2;
+    margin: 0 0 2.4rem;
+  }
+
+  h1 em{
+    font-style: italic;
+    color: var(--coral);
+  }
+
+  .rapide{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    justify-content: center;
+    margin-bottom: 1.8rem;
+  }
+
+  .chip{
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--card);
+    border: 1px solid rgba(247, 236, 224, 0.16);
+    color: var(--cream);
+    border-radius: 999px;
+    padding: 0.75rem 1.3rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .chip:hover{
+    border-color: var(--coral);
+    background: rgba(239, 122, 95, 0.12);
+  }
+
+  .divisore{
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 1.6rem 0;
+  }
+
+  .divisore::before, .divisore::after{
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(247, 236, 224, 0.14);
+  }
+
+  #subito{
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--coral);
+    color: var(--bg);
+    font-weight: 500;
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.8rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  #subito:hover{
+    background: var(--coral-dim);
+  }
+
+  .stato{
+    margin-top: 1.8rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .stato.show{ opacity: 0.85; }
+</style>
+</head>
+<body>
+
+  <div class="scene">
+    <p class="kicker" id="kicker">Ultima cosa</p>
+    <h1 id="domanda">Quando ci vediamo?</h1>
+
+    <div class="rapide" id="rapide"></div>
+
+    <div class="divisore">oppure</div>
+
+    <button id="subito">Subito</button>
+
+    <p class="stato" id="stato"></p>
+  </div>
+
+<script>
+  // Gestione risposte: tutto in localStorage, niente server.
+  const STORAGE_KEY = 'situationship_risposte';
+
+  function getRisposte(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){
+      return {};
+    }
+  }
+
+  function salvaRisposta(chiave, valore){
+    const risposte = getRisposte();
+    risposte[chiave] = valore;
+    risposte.ultimoAggiornamento = new Date().toISOString();
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(risposte));
+    }catch(e){
+      console.warn('Impossibile salvare la risposta', e);
+    }
+    return risposte;
+  }
+
+  // Testo su misura in base all'attività scelta nella pagina precedente
+  const domande = {
+    'Aperitivo': 'Quando ci prendiamo un aperitivo?',
+    'Cena': 'Quando andiamo a cena?',
+    'Passeggiata': 'Quando facciamo due passi?',
+    'Cinema': 'Quando andiamo al cinema?',
+    'Gita fuori porta': 'Quando ci prendiamo una giornata intera?',
+    'Sorprendimi tu': 'Quando vuoi che ti sorprenda?'
+  };
+
+  const risposte = getRisposte();
+  const attivita = risposte.attivita;
+
+  if(attivita && domande[attivita]){
+    document.getElementById('domanda').textContent = domande[attivita];
+    document.getElementById('kicker').textContent = `Bene, ${attivita.toLowerCase()} allora`;
+  }
+
+  // Genera i 7 giorni della settimana prossima, con le date vere calcolate da oggi
+  const giorniSettimana = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+  const rapide = document.getElementById('rapide');
+
+  const oggi = new Date();
+  const giornoOggi = oggi.getDay(); // 0 = domenica ... 6 = sabato
+  const giorniAlProssimoLunedi = ((8 - giornoOggi) % 7) || 7;
+  const prossimoLunedi = new Date(oggi);
+  prossimoLunedi.setDate(oggi.getDate() + giorniAlProssimoLunedi);
+
+  for(let i = 0; i < 7; i++){
+    const giorno = new Date(prossimoLunedi);
+    giorno.setDate(prossimoLunedi.getDate() + i);
+
+    const gg = String(giorno.getDate()).padStart(2, '0');
+    const mm = String(giorno.getMonth() + 1).padStart(2, '0');
+    const aaaa = giorno.getFullYear();
+    const valoreData = `${gg}/${mm}/${aaaa}`;
+    const etichetta = `${giorniSettimana[i]} ${gg}/${mm}`;
+
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.dataset.rapida = valoreData;
+    chip.textContent = etichetta;
+    rapide.appendChild(chip);
+  }
+
+  const stato = document.getElementById('stato');
+
+  function vaiAvanti(valoreData){
+    salvaRisposta('data', valoreData);
+    stato.textContent = `Segnato: ${valoreData}. Ci vediamo presto.`;
+    stato.classList.add('show');
+    setTimeout(() => {
+      window.location.href = 'grazie.html';
+    }, 600);
+  }
+
+  rapide.addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip');
+    if(!btn) return;
+    vaiAvanti(btn.dataset.rapida);
+  });
+
+  document.getElementById('subito').addEventListener('click', () => {
+    vaiAvanti('Subito');
+  });
+</script>
+
+</body>
+</html>
