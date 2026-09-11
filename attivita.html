@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Che facciamo?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #241129;
+    --bg-2: #33163a;
+    --cream: #f7ecdf;
+    --coral: #ef7a5f;
+    --coral-dim: #c95f49;
+    --muted: #b79fc0;
+    --card: rgba(247, 236, 224, 0.06);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{ margin: 0; min-height: 100%; }
+
+  body{
+    background: radial-gradient(ellipse at 30% 20%, var(--bg-2), var(--bg) 65%);
+    color: var(--cream);
+    font-family: 'Space Grotesk', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .scene{
+    width: min(620px, 92vw);
+    text-align: center;
+  }
+
+  .kicker{
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 0.9rem;
+  }
+
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.9rem, 5.5vw, 2.9rem);
+    line-height: 1.2;
+    margin: 0 0 2.6rem;
+  }
+
+  h1 em{
+    font-style: italic;
+    color: var(--coral);
+  }
+
+  .griglia{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.9rem;
+  }
+
+  @media (max-width: 480px){
+    .griglia{ grid-template-columns: 1fr; }
+  }
+
+  .opzione{
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--card);
+    border: 1px solid rgba(247, 236, 224, 0.16);
+    color: var(--cream);
+    border-radius: 14px;
+    padding: 1.3rem 1.1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  }
+
+  .opzione:hover{
+    border-color: var(--coral);
+    background: rgba(239, 122, 95, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .opzione .titolo{
+    display: block;
+    font-weight: 500;
+    font-size: 1.05rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .opzione .desc{
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .stato{
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .stato.show{ opacity: 0.85; }
+</style>
+</head>
+<body>
+
+  <div class="scene">
+    <p class="kicker">Bene, direi che è un sì</p>
+    <h1>Allora, che <em>attività</em> ti va di fare?</h1>
+
+    <div class="griglia" id="griglia">
+      <button class="opzione" data-attivita="Aperitivo">
+        <span class="titolo">Aperitivo</span>
+        <span class="desc">due chiacchiere, niente fretta</span>
+      </button>
+      <button class="opzione" data-attivita="Cena">
+        <span class="titolo">Cena</span>
+        <span class="desc">qualcosa di più con calma</span>
+      </button>
+      <button class="opzione" data-attivita="Passeggiata">
+        <span class="titolo">Passeggiata</span>
+        <span class="desc">all'aperto, senza impegno</span>
+      </button>
+      <button class="opzione" data-attivita="Cinema">
+        <span class="titolo">Cinema</span>
+        <span class="desc">un film, poi si vede</span>
+      </button>
+      <button class="opzione" data-attivita="Gita fuori porta">
+        <span class="titolo">Gita fuori porta</span>
+        <span class="desc">un giorno intero, via da qui</span>
+      </button>
+      <button class="opzione" data-attivita="Sorprendimi tu">
+        <span class="titolo">Sorprendimi tu</span>
+        <span class="desc">scelgo io, ti fidi?</span>
+      </button>
+    </div>
+
+    <p class="stato" id="stato"></p>
+  </div>
+
+<script src="risposte.js"></script>
+<script>
+  const griglia = document.getElementById('griglia');
+  const stato = document.getElementById('stato');
+
+  griglia.addEventListener('click', (e) => {
+    const btn = e.target.closest('.opzione');
+    if(!btn) return;
+
+    const scelta = btn.dataset.attivita;
+    salvaRisposta('attivita', scelta);
+
+    stato.textContent = `Segnato: ${scelta}. Ti porto avanti...`;
+    stato.classList.add('show');
+
+    setTimeout(() => {
+      window.location.href = 'data.html';
+    }, 500);
+  });
+</script>
+
+</body>
+</html>
