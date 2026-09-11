@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fatto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #241129;
+    --bg-2: #33163a;
+    --cream: #f7ecdf;
+    --coral: #ef7a5f;
+    --muted: #b79fc0;
+    --card: rgba(247, 236, 224, 0.06);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{ margin: 0; min-height: 100%; }
+
+  body{
+    background: radial-gradient(ellipse at 30% 20%, var(--bg-2), var(--bg) 65%);
+    color: var(--cream);
+    font-family: 'Space Grotesk', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .scene{
+    width: min(520px, 92vw);
+    text-align: center;
+  }
+
+  .kicker{
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 0.9rem;
+  }
+
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.2;
+    margin: 0 0 2rem;
+  }
+
+  h1 em{
+    font-style: italic;
+    color: var(--coral);
+  }
+
+  .riepilogo{
+    background: var(--card);
+    border: 1px solid rgba(247, 236, 224, 0.14);
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    text-align: left;
+    margin-bottom: 1.6rem;
+  }
+
+  .riga{
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 0.95rem;
+  }
+
+  .riga + .riga{
+    border-top: 1px solid rgba(247, 236, 224, 0.1);
+  }
+
+  .riga .etichetta{
+    color: var(--muted);
+  }
+
+  .riga .valore{
+    font-weight: 500;
+  }
+
+  .stato{
+    font-size: 0.85rem;
+    color: var(--muted);
+    min-height: 1.2em;
+  }
+</style>
+</head>
+<body>
+
+  <div class="scene">
+    <p class="kicker">Ricevuto</p>
+    <h1>Ci vediamo <em>presto</em>, allora.</h1>
+
+    <div class="riepilogo" id="riepilogo"></div>
+
+    <p class="stato" id="stato">Invio in corso...</p>
+  </div>
+
+<script>
+  // ==========================================================
+  // METTI QUI IL TUO FORM ID DI FORMSPREE (es. "xkgqwrzp")
+  const FORMSPREE_ID = 'INCOLLA_QUI_IL_TUO_FORM_ID';
+  // ==========================================================
+
+  const STORAGE_KEY = 'situationship_risposte';
+
+  function getRisposte(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){
+      return {};
+    }
+  }
+
+  const risposte = getRisposte();
+  const riepilogo = document.getElementById('riepilogo');
+  const stato = document.getElementById('stato');
+
+  const etichette = {
+    attivita: 'Attività',
+    data: 'Quando'
+  };
+
+  Object.keys(etichette).forEach((chiave) => {
+    if(risposte[chiave]){
+      const riga = document.createElement('div');
+      riga.className = 'riga';
+      riga.innerHTML = `<span class="etichetta">${etichette[chiave]}</span><span class="valore">${risposte[chiave]}</span>`;
+      riepilogo.appendChild(riga);
+    }
+  });
+
+  async function invia(){
+    if(FORMSPREE_ID === 'INCOLLA_QUI_IL_TUO_FORM_ID'){
+      stato.textContent = 'Configurazione non completata (manca il Form ID).';
+      return;
+    }
+
+    try{
+      const risposta = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(risposte)
+      });
+
+      if(risposta.ok){
+        stato.textContent = 'Fatto.';
+      }else{
+        stato.textContent = 'Qualcosa non ha funzionato, ma le risposte restano salvate qui.';
+      }
+    }catch(e){
+      stato.textContent = 'Qualcosa non ha funzionato, ma le risposte restano salvate qui.';
+    }
+  }
+
+  invia();
+</script>
+
+</body>
+</html>
