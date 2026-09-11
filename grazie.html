@@ -137,9 +137,17 @@
   });
 
   async function invia(){
-    if(FORMSPREE_ID === 'INCOLLA_QUI_IL_TUO_FORM_ID'){
-      stato.textContent = 'Configurazione non completata (manca il Form ID).';
-      return;
+    
+  // Modalità test: apri la pagina come grazie.html?test per saltare l'invio vero
+  const isTest = new URLSearchParams(window.location.search).has('test');
+  if(isTest){
+    stato.textContent = '💙';
+    stato.classList.add('successo');
+    return;
+
+//    if(FORMSPREE_ID === 'INCOLLA_QUI_IL_TUO_FORM_ID'){
+  //    stato.textContent = 'Configurazione non completata (manca il Form ID).';
+    //  return;
     }
 
     try{
