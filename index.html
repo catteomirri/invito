@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Una domanda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #241129;
+    --bg-2: #33163a;
+    --cream: #f7ecdf;
+    --coral: #ef7a5f;
+    --coral-dim: #c95f49;
+    --muted: #b79fc0;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body{
+    background: radial-gradient(ellipse at 30% 20%, var(--bg-2), var(--bg) 65%);
+    color: var(--cream);
+    font-family: 'Space Grotesk', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .scene{
+    width: min(560px, 88vw);
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .kicker{
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 0.9rem;
+    letter-spacing: 0.02em;
+  }
+
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(2.1rem, 6vw, 3.4rem);
+    line-height: 1.15;
+    margin: 0 0 3rem;
+  }
+
+  h1 em{
+    font-style: italic;
+    color: var(--coral);
+  }
+
+  .choices{
+    display: flex;
+    gap: 1.1rem;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 68px;
+  }
+
+  button{
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    border-radius: 999px;
+    padding: 0.9rem 2.1rem;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  #yes{
+    background: var(--coral);
+    color: var(--bg);
+    font-weight: 500;
+  }
+
+  #yes:hover{
+    background: var(--coral-dim);
+  }
+
+  #no{
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid rgba(183, 159, 192, 0.5);
+    position: fixed;
+    transition: top 0.2s ease, left 0.2s ease;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .no-static{
+    position: static !important;
+  }
+
+  .hint{
+    margin-top: 1.6rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    min-height: 1.2em;
+  }
+
+  .hint.show{ opacity: 0.85; }
+
+  footer{
+    position: absolute;
+    bottom: 1.5rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+
+  <div class="scene">
+    <p class="kicker">C'è una cosa che ti volevo chiedere</p>
+    <h1>Ti va di uscire con me,<br>sul serio, <em>una vera uscita</em>?</h1>
+
+    <div class="choices" id="choices">
+      <button id="yes">Sì</button>
+      <button id="no" class="no-static">No</button>
+    </div>
+
+    <p class="hint" id="hint"></p>
+  </div>
+
+  <footer>puoi provare a toccare il "no", ma non prometto nulla</footer>
+
+<script>
+  const noBtn = document.getElementById('no');
+  const yesBtn = document.getElementById('yes');
+  const hint = document.getElementById('hint');
+
+  const messages = [
+    "quasi.",
+    "eh no, dai.",
+    "ancora più lontano, mi sa.",
+    "sei tenace, ok.",
+    "va bene, ci riprovo io a scappare.",
+    "il sì è comodo qui vicino, giusto?"
+  ];
+  let escapeCount = 0;
+  let firstMove = true;
+
+  function viewportSize(){
+    // window.visualViewport è più affidabile su mobile (barra indirizzi che appare/scompare)
+    if(window.visualViewport){
+      return { w: window.visualViewport.width, h: window.visualViewport.height };
+    }
+    return { w: window.innerWidth, h: window.innerHeight };
+  }
+
+  function moveNo(){
+    const { w: vw, h: vh } = viewportSize();
+
+    if(firstMove){
+      // la prima volta stacca il bottone dal flusso e lo mette in posizione assoluta
+      const rect = noBtn.getBoundingClientRect();
+      noBtn.classList.remove('no-static');
+      noBtn.style.left = rect.left + 'px';
+      noBtn.style.top = rect.top + 'px';
+      firstMove = false;
+      noBtn.offsetHeight; // forza reflow prima di animare la prossima posizione
+    }
+
+    const margin = 20;
+    const w = noBtn.offsetWidth;
+    const h = noBtn.offsetHeight;
+    const maxX = Math.max(margin, vw - w - margin);
+    const maxY = Math.max(margin, vh - h - margin);
+
+    const newX = margin + Math.random() * (maxX - margin);
+    const newY = margin + Math.random() * (maxY - margin);
+
+    noBtn.style.left = newX + 'px';
+    noBtn.style.top = newY + 'px';
+
+    escapeCount++;
+    hint.textContent = messages[Math.min(escapeCount - 1, messages.length - 1)];
+    hint.classList.add('show');
+  }
+
+  // Desktop: scappa all'avvicinarsi del mouse
+  noBtn.addEventListener('mouseenter', moveNo);
+  noBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    moveNo();
+  });
+
+  // Mobile: niente hover, quindi il dito va intercettato PRIMA che tocchi il bottone.
+  // Ascoltiamo i tocchi su tutta la pagina e, se cadono vicino al bottone, lo spostiamo
+  // prima che il tocco venga interpretato come una pressione sul bottone stesso.
+  const DODGE_RADIUS = 70; // px di "raggio di allerta" intorno al bottone
+
+  function distanceToNo(x, y){
+    const rect = noBtn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    return Math.hypot(x - cx, y - cy);
+  }
+
+  document.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    if(!t) return;
+    if(distanceToNo(t.clientX, t.clientY) < DODGE_RADIUS){
+      e.preventDefault();
+      moveNo();
+    }
+  }, { passive: false });
+
+  yesBtn.addEventListener('click', () => {
+    window.location.href = 'attivita.html';
+  });
+</script>
+
+</body>
+</html>
